@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國體大冒險：體育小精靈的挑戰</title>
+    <!-- 引入 Tailwind CSS (樣式) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 React 和 ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- 引入 Babel (讓瀏覽器看懂 React) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        /* 自定義動畫樣式 */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .animate-shake {
+            animation: shake 0.3s ease-in-out;
+        }
+        @keyframes bounce-small {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-bounce-small {
+            animation: bounce-small 2s infinite;
+        }
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: #eff6ff;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- 圖示元件 (用 SVG 繪製) ---
+        const IconWrapper = ({ children, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {children}
+            </svg>
+        );
+
+        const MapIcon = ({ className }) => <IconWrapper className={className}><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></IconWrapper>;
+        const TrophyIcon = ({ className }) => <IconWrapper className={className}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></IconWrapper>;
+        const CheckCircleIcon = ({ className }) => <IconWrapper className={className}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></IconWrapper>;
+        const XCircleIcon = ({ className }) => <IconWrapper className={className}><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></IconWrapper>;
+        const StarIcon = ({ className }) => <IconWrapper className={className}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></IconWrapper>;
+        const FootprintsIcon = ({ className }) => <IconWrapper className={className}><path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 11 3.8 11 8c0 2.85-1.67 5.12-2 6.32V16h-5z"></path><path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 13 7.8 13 12c0 2.85 1.67 5.12 2 6.32V20h5z"></path></IconWrapper>;
+        const InfoIcon = ({ className }) => <IconWrapper className={className}><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></IconWrapper>;
+        const ArrowRightIcon = ({ className }) => <IconWrapper className={className}><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></IconWrapper>;
+        const RotateCcwIcon = ({ className }) => <IconWrapper className={className}><path d="M1 4v6h6"></path><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></IconWrapper>;
+
+        // --- 遊戲資料 ---
+        const LOCATIONS = [
+            {
+                id: 1,
+                name: "志清湖",
+                shortName: "志清湖",
+                icon: "🦢",
+                color: "bg-cyan-400",
+                description: "這裡是國體大最美麗的湖泊，湖面波光粼粼，還有很多可愛的小動物住在這裡喔！",
+                question: "小朋友，請仔細觀察志清湖，下面哪一種動物最喜歡在這裡游泳？",
+                options: [
+                    { text: "大鯊魚", isCorrect: false },
+                    { text: "黑天鵝與鴨子", isCorrect: true },
+                    { text: "北極熊", isCorrect: false }
+                ],
+                funFact: "志清湖是國體大的地標，常常可以看到黑天鵝家族在散步呢！"
+            },
+            {
+                id: 2,
+                name: "綜合體育館",
+                shortName: "體育館",
+                icon: "🍔",
+                color: "bg-orange-400",
+                description: "這棟巨大的體育館非常有特色，屋頂圓圓的，看起來好可口！",
+                question: "因為這座體育館的外型很特別，大家都幫它取了一個好吃的綽號，叫做什麼？",
+                options: [
+                    { text: "漢堡館", isCorrect: true },
+                    { text: "薯條館", isCorrect: false },
+                    { text: "披薩館", isCorrect: false }
+                ],
+                funFact: "因為屋頂灰灰的、中間胖胖的，看起來真的很像一個大漢堡！"
+            },
+            {
+                id: 3,
+                name: "田徑場",
+                shortName: "田徑場",
+                icon: "🏃",
+                color: "bg-red-400",
+                description: "這裡是奧運選手練習跑步的地方，地板軟軟的有彈性。",
+                question: "標準的田徑跑道一圈是多少公尺呢？（提示：要在這裡跑完一圈可不簡單喔！）",
+                options: [
+                    { text: "100 公尺", isCorrect: false },
+                    { text: "200 公尺", isCorrect: false },
+                    { text: "400 公尺", isCorrect: true }
+                ],
+                funFact: "國體大的田徑場非常標準，很多厲害的國手都在這裡流汗練習。"
+            },
+            {
+                id: 4,
+                name: "行政大樓",
+                shortName: "大樓",
+                icon: "🏫",
+                color: "bg-indigo-400",
+                description: "這是學校最高的建築物，大家處理事情都會來這裡。",
+                question: "國立體育大學的英文縮寫是 NTSU，請問 N 代表什麼意思？",
+                options: [
+                    { text: "National (國立)", isCorrect: true },
+                    { text: "Nice (很好)", isCorrect: false },
+                    { text: "Night (晚上)", isCorrect: false }
+                ],
+                funFact: "NTSU 代表 National Taiwan Sport University，是台灣體育最高學府喔！"
+            }
+        ];
+
+        // --- 輔助元件 ---
+        const Button = ({ onClick, children, className = "", disabled = false }) => (
+            <button
+                onClick={onClick}
+                disabled={disabled}
+                className={`px-6 py-3 rounded-2xl font-bold shadow-[0_4px_0_rgba(0,0,0,0.2)] active:shadow-none active:translate-y-1 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+            >
+                {children}
+            </button>
+        );
+
+        const Card = ({ children, className = "" }) => (
+            <div className={`bg-white rounded-3xl p-6 shadow-xl border-4 border-slate-100 ${className}`}>
+                {children}
+            </div>
+        );
+
+        // --- 主程式 ---
+        function NTSUAdventure() {
+            const [gameState, setGameState] = useState('start'); 
+            const [currentLocationId, setCurrentLocationId] = useState(null);
+            const [progress, setProgress] = useState(() => {
+                if (typeof window !== 'undefined') {
+                    const saved = localStorage.getItem('ntsu_adventure_progress');
+                    return saved ? JSON.parse(saved) : [];
+                }
+                return [];
+            });
+            const [selectedOption, setSelectedOption] = useState(null);
+            const [showFeedback, setShowFeedback] = useState(null);
+
+            useEffect(() => {
+                localStorage.setItem('ntsu_adventure_progress', JSON.stringify(progress));
+            }, [progress]);
+
+            const currentLocation = LOCATIONS.find(loc => loc.id === currentLocationId);
+
+            const handleStartGame = () => {
+                if (progress.length === LOCATIONS.length) {
+                    setGameState('complete');
+                } else {
+                    setGameState('map');
+                }
+            };
+
+            const handleSelectLocation = (id) => {
+                if (progress.includes(id)) return;
+                setCurrentLocationId(id);
+                setGameState('quiz');
+                setSelectedOption(null);
+                setShowFeedback(null);
+            };
+
+            const handleAnswer = (isCorrect, optionIndex) => {
+                setSelectedOption(optionIndex);
+                if (isCorrect) {
+                    setShowFeedback('correct');
+                    setTimeout(() => {
+                        setGameState('success');
+                        if (!progress.includes(currentLocationId)) {
+                            setProgress(prev => [...prev, currentLocationId]);
+                        }
+                    }, 1000);
+                } else {
+                    setShowFeedback('wrong');
+                }
+            };
+
+            const handleBackToMap = () => {
+                if (progress.length === LOCATIONS.length) {
+                    setGameState('complete');
+                } else {
+                    setGameState('map');
+                }
+                setCurrentLocationId(null);
+            };
+
+            const handleRestart = () => {
+                setGameState('start');
+                setProgress([]);
+                localStorage.removeItem('ntsu_adventure_progress');
+                setCurrentLocationId(null);
+            };
+
+            // 1. 開始畫面
+            if (gameState === 'start') {
+                return (
+                    <div className="min-h-screen bg-blue-50 flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
+                        <div className="absolute top-10 left-10 text-6xl opacity-20 animate-bounce">⚽</div>
+                        <div className="absolute bottom-10 right-10 text-6xl opacity-20 animate-bounce delay-700">🏀</div>
+                        <div className="absolute top-1/2 left-5 text-4xl opacity-20 animate-pulse">🌳</div>
+                        
+                        <div className="max-w-md w-full text-center z-10">
+                            <div className="mb-6 inline-block bg-white p-6 rounded-full shadow-2xl border-8 border-yellow-300">
+                                <span className="text-6xl">🏆</span>
+                            </div>
+                            <h1 className="text-4xl font-black text-blue-600 mb-2 tracking-wider">國體大冒險</h1>
+                            <h2 className="text-xl font-bold text-slate-500 mb-8">體育小精靈的挑戰</h2>
+                            
+                            <Card className="mb-8 rotate-1 hover:rotate-0 transition-transform duration-300">
+                                <p className="text-slate-600 text-lg leading-relaxed">
+                                    歡迎來到國立體育大學！<br/>
+                                    我是體育小精靈，我要帶你去校園裡探險。<br/>
+                                    只要找到這 <span className="text-red-500 font-bold text-xl">4</span> 個地點並回答問題，<br/>
+                                    就能獲得<span className="text-yellow-500 font-bold">金牌勳章</span>喔！
+                                </p>
+                            </Card>
+
+                            <Button onClick={handleStartGame} className="bg-yellow-400 text-yellow-900 text-xl w-full hover:bg-yellow-300">
+                                開始冒險 GO!
+                            </Button>
+                        </div>
+                    </div>
+                );
+            }
+
+            // 2. 地圖選單
+            if (gameState === 'map') {
+                return (
+                    <div className="min-h-screen bg-green-50 p-4 font-sans">
+                        <div className="max-w-md mx-auto">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-2xl font-black text-green-700 flex items-center gap-2">
+                                    <MapIcon className="w-8 h-8" /> 校園地圖
+                                </h2>
+                                <div className="bg-white px-4 py-2 rounded-full shadow-sm border-2 border-green-200 font-bold text-green-600">
+                                    進度: {progress.length} / {LOCATIONS.length}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                {LOCATIONS.map((loc) => {
+                                    const isCompleted = progress.includes(loc.id);
+                                    return (
+                                        <button
+                                            key={loc.id}
+                                            onClick={() => handleSelectLocation(loc.id)}
+                                            disabled={isCompleted}
+                                            className={`relative aspect-square rounded-3xl p-4 flex flex-col items-center justify-center gap-2 transition-all transform
+                                                ${isCompleted 
+                                                ? 'bg-slate-200 cursor-default opacity-80' 
+                                                : `${loc.color} hover:scale-105 shadow-[0_6px_0_rgba(0,0,0,0.1)] active:shadow-none active:translate-y-2`
+                                                }
+                                            `}
+                                        >
+                                            <span className="text-5xl filter drop-shadow-md">{loc.icon}</span>
+                                            <span className={`font-bold text-lg ${isCompleted ? 'text-slate-500' : 'text-white drop-shadow-md'}`}>
+                                                {loc.shortName}
+                                            </span>
+                                            {isCompleted && (
+                                                <div className="absolute inset-0 flex items-center justify-center bg-black/10 rounded-3xl">
+                                                    <CheckCircleIcon className="w-16 h-16 text-white drop-shadow-lg" />
+                                                </div>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            <div className="mt-8 bg-white p-4 rounded-2xl border-l-8 border-blue-400 shadow-sm">
+                                <h3 className="font-bold text-blue-600 flex items-center gap-2 mb-1">
+                                    <FootprintsIcon className="w-5 h-5" /> 小精靈提示：
+                                </h3>
+                                <p className="text-slate-600 text-sm">
+                                    請點擊彩色的格子前往闖關地點！完成所有地點後會有神秘獎勵喔！
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // 3. 答題畫面
+            if (gameState === 'quiz' && currentLocation) {
+                return (
+                    <div className={`min-h-screen ${currentLocation.color.replace('bg-', 'bg-opacity-20 bg-')} p-4 flex flex-col font-sans`}>
+                        <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
+                            <button 
+                                onClick={() => setGameState('map')} 
+                                className="self-start mb-4 bg-white/80 p-2 rounded-full hover:bg-white text-slate-600"
+                            >
+                                <ArrowRightIcon className="w-6 h-6 rotate-180" />
+                            </button>
+
+                            <Card className="flex-1 flex flex-col items-center text-center mb-6 relative overflow-visible">
+                                <div className={`absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 ${currentLocation.color} rounded-full border-4 border-white flex items-center justify-center shadow-lg`}>
+                                    <span className="text-5xl">{currentLocation.icon}</span>
+                                </div>
+
+                                <h2 className="text-2xl font-black text-slate-800 mt-12 mb-2">{currentLocation.name}</h2>
+                                <div className="bg-slate-100 rounded-lg p-3 mb-6 w-full text-left flex gap-3">
+                                    <InfoIcon className="w-6 h-6 text-blue-500 shrink-0 mt-1" />
+                                    <p className="text-slate-600 text-sm leading-relaxed">{currentLocation.description}</p>
+                                </div>
+
+                                <div className="w-full h-1 bg-slate-100 mb-6 rounded-full"></div>
+
+                                <h3 className="text-xl font-bold text-slate-800 mb-6 leading-snug">
+                                    <span className="text-red-500 mr-2">Q:</span>
+                                    {currentLocation.question}
+                                </h3>
+
+                                <div className="w-full space-y-3">
+                                    {currentLocation.options.map((option, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => handleAnswer(option.isCorrect, idx)}
+                                            disabled={showFeedback !== null}
+                                            className={`w-full p-4 rounded-xl border-2 font-bold text-lg transition-all
+                                                ${showFeedback !== null && idx === selectedOption
+                                                ? option.isCorrect 
+                                                    ? 'bg-green-100 border-green-500 text-green-700'
+                                                    : 'bg-red-100 border-red-500 text-red-700 animate-shake'
+                                                : 'bg-white border-slate-200 text-slate-600 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50'
+                                                }
+                                            `}
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <span>{option.text}</span>
+                                                {showFeedback !== null && idx === selectedOption && (
+                                                    option.isCorrect 
+                                                        ? <CheckCircleIcon className="w-6 h-6 text-green-500" />
+                                                        : <XCircleIcon className="w-6 h-6 text-red-500" />
+                                                )}
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                                
+                                {showFeedback === 'wrong' && (
+                                    <div className="mt-4 text-red-500 font-bold animate-pulse">
+                                        唉呀！再試一次看看？
+                                        <div className="text-sm font-normal text-slate-400 mt-1">(2秒後重置)</div>
+                                    </div>
+                                )}
+                            </Card>
+                        </div>
+                    </div>
+                );
+            }
+
+            // 4. 成功通關
+            if (gameState === 'success' && currentLocation) {
+                return (
+                    <div className="min-h-screen bg-yellow-400 flex flex-col items-center justify-center p-4 font-sans text-center">
+                        <div className="bg-white rounded-3xl p-8 shadow-2xl max-w-sm w-full animate-bounce-small">
+                            <div className="text-6xl mb-4">🎉</div>
+                            <h2 className="text-3xl font-black text-yellow-600 mb-2">答對了！</h2>
+                            <p className="text-slate-500 font-bold text-lg mb-6">你真棒！獲得 1 個印章！</p>
+                            
+                            <div className="bg-yellow-50 p-4 rounded-xl border-2 border-yellow-200 text-left mb-8">
+                                <h4 className="font-bold text-yellow-800 mb-1 flex items-center gap-2">
+                                    <StarIcon className="w-5 h-5 fill-yellow-500 text-yellow-500" /> 小知識：
+                                </h4>
+                                <p className="text-slate-700">{currentLocation.funFact}</p>
+                            </div>
+
+                            <Button onClick={handleBackToMap} className="bg-green-500 text-white w-full hover:bg-green-400">
+                                {progress.length === LOCATIONS.length -1 ? "查看結果" : "繼續冒險"}
+                            </Button>
+                        </div>
+                    </div>
+                );
+            }
+
+            // 5. 結算畫面
+            if (gameState === 'complete') {
+                return (
+                    <div className="min-h-screen bg-gradient-to-b from-blue-400 to-purple-500 p-4 flex flex-col items-center justify-center font-sans">
+                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                            {[...Array(20)].map((_, i) => (
+                                <div key={i} className="absolute text-2xl animate-float" style={{
+                                    left: `${Math.random() * 100}%`,
+                                    top: `${Math.random() * 100}%`,
+                                    animationDelay: `${Math.random() * 2}s`,
+                                    opacity: 0.6
+                                }}>✨</div>
+                            ))}
+                        </div>
+
+                        <Card className="w-full max-w-md text-center py-10 relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-red-400 via-yellow-400 to-green-400"></div>
+                            
+                            <div className="mb-6 relative inline-block">
+                                <TrophyIcon className="w-32 h-32 text-yellow-400 mx-auto drop-shadow-lg" />
+                                <div className="absolute -bottom-2 -right-2 bg-red-500 text-white font-bold px-3 py-1 rounded-full text-sm rotate-12 shadow-md">
+                                    任務達成
+                                </div>
+                            </div>
+
+                            <h1 className="text-3xl font-black text-slate-800 mb-2">恭喜你！</h1>
+                            <p className="text-slate-500 mb-8">你已經完成了國體大冒險的所有挑戰！</p>
+
+                            <div className="grid grid-cols-4 gap-2 mb-8 px-4">
+                                {LOCATIONS.map(loc => (
+                                    <div key={loc.id} className="flex flex-col items-center">
+                                        <div className={`w-12 h-12 rounded-full ${loc.color} flex items-center justify-center text-2xl shadow-inner`}>
+                                            {loc.icon}
+                                        </div>
+                                        <div className="mt-1 text-xs font-bold text-slate-400">{loc.shortName}</div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="space-y-3">
+                                <div className="bg-blue-50 p-4 rounded-xl text-blue-800 text-sm font-bold">
+                                    你是「國體大知識小博士」！
+                                </div>
+                                <Button onClick={handleRestart} className="bg-slate-800 text-white w-full hover:bg-slate-700 flex items-center justify-center gap-2">
+                                    <RotateCcwIcon className="w-5 h-5" /> 再玩一次
+                                </Button>
+                            </div>
+                        </Card>
+                        
+                        <div className="mt-8 text-white/80 text-sm font-medium">
+                            National Taiwan Sport University
+                        </div>
+                    </div>
+                );
+            }
+            
+            return null;
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<NTSUAdventure />);
+    </script>
+</body>
+</html>
