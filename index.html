@@ -3,459 +3,519 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>國體大冒險：體育小精靈的挑戰</title>
-    <!-- 引入 Tailwind CSS (樣式) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 React 和 ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- 引入 Babel (讓瀏覽器看懂 React) -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
+    <title>減碳大作戰：地球保衛戰</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* 自定義動畫樣式 */
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-            100% { transform: translateY(0px); }
-        }
-        .animate-float {
-            animation: float 3s ease-in-out infinite;
-        }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-        .animate-shake {
-            animation: shake 0.3s ease-in-out;
-        }
-        @keyframes bounce-small {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        .animate-bounce-small {
-            animation: bounce-small 2s infinite;
-        }
-        body {
-            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
-            background-color: #eff6ff;
-        }
+/* --- 全局設定與背景 --- */
+* { box-sizing: border-box; }
+p { margin: 0; margin-bottom: 15px; }
+
+body {
+  background-color: #f0f9ff;
+  background-image: radial-gradient(#bae6fd 20%, transparent 20%),
+                    radial-gradient(#bae6fd 20%, transparent 20%);
+  background-size: 40px 40px;
+  background-position: 0 0, 20px 20px;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  min-height: 100vh;
+  padding: 20px;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+}
+
+/* 遊戲畫面容器，加入隱藏與顯示邏輯 */
+.slide-container {
+  display: none; /* 預設全部隱藏 */
+  flex-direction: column;
+  align-items: center;
+  background-color: #ffffff;
+  border-radius: 40px;
+  border: 8px solid #e0f2fe;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  height: 720px;
+  justify-content: center;
+  padding: 60px;
+  position: relative;
+  width: 1280px;
+  max-width: 100%;
+  animation: fadeIn 0.5s ease;
+}
+
+/* 只有帶有 active class 的畫面會顯示 */
+.slide-container.active {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- 按鈕與互動設計 --- */
+.action-btn {
+  background-color: #0ea5e9;
+  color: white;
+  border: none;
+  padding: 20px 50px;
+  font-size: 32px;
+  font-weight: 800;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 8px 15px rgba(14, 165, 233, 0.3);
+  transition: all 0.3s ease;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  margin-top: 30px;
+}
+
+.action-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 25px rgba(14, 165, 233, 0.4);
+  background-color: #0284c7;
+}
+
+.action-btn.secondary {
+  background-color: #f59e0b;
+  box-shadow: 0 8px 15px rgba(245, 158, 11, 0.3);
+}
+
+.action-btn.secondary:hover {
+  background-color: #d97706;
+  box-shadow: 0 15px 25px rgba(245, 158, 11, 0.4);
+}
+
+/* --- 字體與排版 --- */
+h1, h2, h3 { color: #0f172a; font-weight: 800; margin: 0; }
+p, li, .subtitle { color: #334155; font-weight: 700; }
+h1 { font-size: 80px; line-height: 1.2; }
+.slide-title { font-size: 48px; margin-bottom: 40px; text-align: left; width: 100%; }
+h3 { font-size: 36px; margin-bottom: 15px; }
+p, li, .subtitle { font-size: 24px; line-height: 1.6; }
+.content-area { align-items: center; display: flex; flex-direction: column; flex-grow: 1; justify-content: center; width: 100%; }
+.title-layout { text-align: center; }
+.two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; width: 100%; align-items: center;}
+.two-column.tiled { align-items: stretch; }
+
+/* --- 選擇題卡片樣式 (加入遊戲互動感) --- */
+.choice-card {
+  border-radius: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 50px 40px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.choice-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 20px 30px rgba(0,0,0,0.1);
+}
+
+/* 提示點擊的小標籤 */
+.choice-card::after {
+  content: '👆 點擊選擇';
+  position: absolute;
+  bottom: -25px;
+  background: #334155;
+  color: white;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 20px;
+  font-weight: bold;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.choice-card:hover::after { opacity: 1; }
+
+.choice-good { background-color: #dcfce7; border: 8px solid #86efac; }
+.choice-good h3 { color: #166534; font-size: 48px; margin-bottom: 25px; }
+.choice-good p { color: #15803d; font-size: 26px; }
+
+.choice-bad { background-color: #ffe4e6; border: 8px solid #fda4af; }
+.choice-bad h3 { color: #9f1239; font-size: 48px; margin-bottom: 25px; }
+.choice-bad p { color: #be123c; font-size: 26px; }
+
+/* --- 圖片與圖表區域 --- */
+.placeholder-img {
+  background-color: #f8fafc;
+  border-radius: 30px;
+  border: 6px solid #e0f2fe;
+  height: 380px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: #0ea5e9;
+  font-weight: bold;
+  overflow: hidden;
+}
+
+.tiled-content { display: flex; gap: 40px; justify-content: center; width: 100%; align-items: stretch;}
+.tile { align-items: center; border-radius: 30px; display: flex; flex-direction: column; flex: 1; padding: 40px 30px; text-align: center; }
+.tile:nth-child(1) { background-color: #fef08a; border: 6px solid #fde047; }
+.tile:nth-child(2) { background-color: #bfdbfe; border: 6px solid #93c5fd; }
+.tile:nth-child(3) { background-color: #e9d5ff; border: 6px solid #d8b4fe; }
+.tile .icon { color: #0f172a; font-size: 60px; margin-bottom: 20px; }
+
+.bullet-list ul { list-style: none; margin: 0; padding: 0; }
+.bullet-list li { margin-bottom: 25px; padding-left: 50px; position: relative; font-size: 26px; }
+.bullet-list i { color: #0ea5e9; font-size: 30px; left: 0; position: absolute; top: 0; }
+
+.chart-container { display: flex; flex-direction: column; gap: 30px; width: 100%; }
+.bar { align-items: center; display: flex; gap: 20px; }
+.bar .label { flex: 0 0 180px; font-weight: 800; font-size: 26px; text-align: right; }
+.bar .bar-inner { background-color: #f1f5f9; border-radius: 30px; flex-grow: 1; height: 60px; border: 4px solid #e2e8f0; }
+.bar .bar-fill { align-items: center; border-radius: 26px; color: white; display: flex; font-size: 24px; font-weight: 800; height: 100%; justify-content: flex-end; padding-right: 20px; }
+
+.doughnut-chart-container { align-items: center; display: flex; gap: 100px; justify-content: center; width: 100%; }
+.doughnut-chart { border-radius: 50%; height: 350px; width: 350px; position: relative; border: 6px solid #e0f2fe; background: conic-gradient(#f43f5e 0% 8%, #cbd5e1 8% 100%);}
+.doughnut-chart::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 180px; height: 180px; background-color: #ffffff; border-radius: 50%; border: 6px solid #e0f2fe; }
+.legend { display: flex; flex-direction: column; gap: 25px; list-style: none; padding: 0; }
+.legend li { align-items: center; display: flex; font-size: 28px; font-weight: 800; }
+.legend .color-box { border-radius: 8px; height: 30px; margin-right: 20px; width: 30px; }
+.chart-summary { background-color: #f0fdf4; border-radius: 20px; border: 4px solid #bbf7d0; color: #166534; padding: 20px 30px; margin-top: 40px; width: 100%; text-align: center; }
+
+.quote-layout { margin: 0 auto; text-align: center; width: 85%; background-color: #fff1f2; border-radius: 40px; padding: 60px; border: 6px dashed #fca5a5; }
+.quote-layout blockquote { color: #e11d48; font-size: 48px; font-weight: 800; line-height: 1.4; margin: 0 0 30px 0; }
+.quote-layout cite { color: #475569; font-size: 26px; font-style: normal; }
+
+/* 頂部計分板 */
+#score-board {
+  position: absolute;
+  top: 30px;
+  right: 40px;
+  background-color: #fef08a;
+  padding: 10px 25px;
+  border-radius: 30px;
+  font-weight: 800;
+  font-size: 24px;
+  color: #854d0e;
+  border: 4px solid #fde047;
+  display: none; /* 開始遊戲前隱藏 */
+}
     </style>
 </head>
 <body>
-    <div id="root"></div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+<!-- Slide 1: 遊戲標題畫面 -->
+<div class="slide-container active" id="slide1">
+    <div class="title-layout">
+        <div style="font-size: 100px; line-height: 1; margin-bottom: 20px;">🌍</div>
+        <h1 style="color: #0ea5e9;">減碳大作戰<br><span style="color: #0f172a;">地球保衛戰</span></h1>
+        <p class="subtitle" style="font-size: 32px; color: #64748b; background-color: #f8fafc; display: inline-block; padding: 10px 30px; border-radius: 30px; border: 4px solid #e2e8f0; margin-bottom: 40px;">環保 RPG 闖關小遊戲</p>
+        <br>
+        <button class="action-btn" onclick="nextSlide('slide2')">開始遊戲 <i class="fa-solid fa-play"></i></button>
+    </div>
+</div>
 
-        // --- 圖示元件 (用 SVG 繪製) ---
-        const IconWrapper = ({ children, className }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                {children}
-            </svg>
-        );
-
-        const MapIcon = ({ className }) => <IconWrapper className={className}><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></IconWrapper>;
-        const TrophyIcon = ({ className }) => <IconWrapper className={className}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></IconWrapper>;
-        const CheckCircleIcon = ({ className }) => <IconWrapper className={className}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></IconWrapper>;
-        const XCircleIcon = ({ className }) => <IconWrapper className={className}><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></IconWrapper>;
-        const StarIcon = ({ className }) => <IconWrapper className={className}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></IconWrapper>;
-        const FootprintsIcon = ({ className }) => <IconWrapper className={className}><path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 11 3.8 11 8c0 2.85-1.67 5.12-2 6.32V16h-5z"></path><path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 13 7.8 13 12c0 2.85 1.67 5.12 2 6.32V20h5z"></path></IconWrapper>;
-        const InfoIcon = ({ className }) => <IconWrapper className={className}><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></IconWrapper>;
-        const ArrowRightIcon = ({ className }) => <IconWrapper className={className}><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></IconWrapper>;
-        const RotateCcwIcon = ({ className }) => <IconWrapper className={className}><path d="M1 4v6h6"></path><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></IconWrapper>;
-
-        // --- 遊戲資料 ---
-        const LOCATIONS = [
-            {
-                id: 1,
-                name: "志清湖",
-                shortName: "志清湖",
-                icon: "🦢",
-                color: "bg-cyan-400",
-                description: "這裡是國體大最美麗的湖泊，湖面波光粼粼，還有很多可愛的小動物住在這裡喔！",
-                question: "小朋友，請仔細觀察志清湖，下面哪一種動物最喜歡在這裡游泳？",
-                options: [
-                    { text: "大鯊魚", isCorrect: false },
-                    { text: "黑天鵝與鴨子", isCorrect: true },
-                    { text: "北極熊", isCorrect: false }
-                ],
-                funFact: "志清湖是國體大的地標，常常可以看到黑天鵝家族在散步呢！"
-            },
-            {
-                id: 2,
-                name: "綜合體育館",
-                shortName: "體育館",
-                icon: "🍔",
-                color: "bg-orange-400",
-                description: "這棟巨大的體育館非常有特色，屋頂圓圓的，看起來好可口！",
-                question: "因為這座體育館的外型很特別，大家都幫它取了一個好吃的綽號，叫做什麼？",
-                options: [
-                    { text: "漢堡館", isCorrect: true },
-                    { text: "薯條館", isCorrect: false },
-                    { text: "披薩館", isCorrect: false }
-                ],
-                funFact: "因為屋頂灰灰的、中間胖胖的，看起來真的很像一個大漢堡！"
-            },
-            {
-                id: 3,
-                name: "田徑場",
-                shortName: "田徑場",
-                icon: "🏃",
-                color: "bg-red-400",
-                description: "這裡是奧運選手練習跑步的地方，地板軟軟的有彈性。",
-                question: "標準的田徑跑道一圈是多少公尺呢？（提示：要在這裡跑完一圈可不簡單喔！）",
-                options: [
-                    { text: "100 公尺", isCorrect: false },
-                    { text: "200 公尺", isCorrect: false },
-                    { text: "400 公尺", isCorrect: true }
-                ],
-                funFact: "國體大的田徑場非常標準，很多厲害的國手都在這裡流汗練習。"
-            },
-            {
-                id: 4,
-                name: "行政大樓",
-                shortName: "大樓",
-                icon: "🏫",
-                color: "bg-indigo-400",
-                description: "這是學校最高的建築物，大家處理事情都會來這裡。",
-                question: "國立體育大學的英文縮寫是 NTSU，請問 N 代表什麼意思？",
-                options: [
-                    { text: "National (國立)", isCorrect: true },
-                    { text: "Nice (很好)", isCorrect: false },
-                    { text: "Night (晚上)", isCorrect: false }
-                ],
-                funFact: "NTSU 代表 National Taiwan Sport University，是台灣體育最高學府喔！"
-            }
-        ];
-
-        // --- 輔助元件 ---
-        const Button = ({ onClick, children, className = "", disabled = false }) => (
-            <button
-                onClick={onClick}
-                disabled={disabled}
-                className={`px-6 py-3 rounded-2xl font-bold shadow-[0_4px_0_rgba(0,0,0,0.2)] active:shadow-none active:translate-y-1 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
-            >
-                {children}
-            </button>
-        );
-
-        const Card = ({ children, className = "" }) => (
-            <div className={`bg-white rounded-3xl p-6 shadow-xl border-4 border-slate-100 ${className}`}>
-                {children}
+<!-- Slide 2: 遊戲規則說明 -->
+<div class="slide-container" id="slide2">
+    <h2 class="slide-title" style="text-align: center;">🎮 遊戲規則說明</h2>
+    <div class="content-area">
+        <div class="tiled-content">
+            <div class="tile">
+                <div class="icon"><i class="fa-solid fa-user-astronaut"></i></div>
+                <h3>1. 扮演主角</h3>
+                <p>你將扮演一位正要上學的小朋友，體驗一整天的生活流程。</p>
             </div>
-        );
+            <div class="tile">
+                <div class="icon"><i class="fa-solid fa-code-branch"></i></div>
+                <h3>2. 做出選擇</h3>
+                <p>每個情境都會出現「兩個選項」，請憑直覺點擊你想做的事。</p>
+            </div>
+            <div class="tile">
+                <div class="icon"><i class="fa-solid fa-medal"></i></div>
+                <h3>3. 結算稱號</h3>
+                <p>最後將結算你的總得分，看看你是「低碳達人」還是「排碳大戶」！</p>
+            </div>
+        </div>
+        <button class="action-btn secondary" style="margin-top: 50px;" onclick="startGame()">我準備好了！ <i class="fa-solid fa-check"></i></button>
+    </div>
+</div>
 
-        // --- 主程式 ---
-        function NTSUAdventure() {
-            const [gameState, setGameState] = useState('start'); 
-            const [currentLocationId, setCurrentLocationId] = useState(null);
-            const [progress, setProgress] = useState(() => {
-                if (typeof window !== 'undefined') {
-                    const saved = localStorage.getItem('ntsu_adventure_progress');
-                    return saved ? JSON.parse(saved) : [];
-                }
-                return [];
-            });
-            const [selectedOption, setSelectedOption] = useState(null);
-            const [showFeedback, setShowFeedback] = useState(null);
+<!-- 計分板 (從第一關開始顯示) -->
+<div id="score-board"><i class="fa-solid fa-star"></i> 減碳分數: <span id="score-display">0</span>/4</div>
 
-            useEffect(() => {
-                localStorage.setItem('ntsu_adventure_progress', JSON.stringify(progress));
-            }, [progress]);
+<!-- Slide 3: 關卡一 (選擇題) -->
+<div class="slide-container" id="slide3">
+    <h2 class="slide-title">第一關：美味的早餐 🥪</h2>
+    <div class="content-area">
+        <div class="two-column tiled">
+            <!-- 選擇 A (正確: 1分) -->
+            <div class="choice-card choice-good" onclick="answer(1, 'slide4')">
+                <h3>👉 選擇 A</h3>
+                <p>享用「在地小農」製作的紫米飯糰與無糖豆漿。支持本地農業，食物新鮮又美味！</p>
+            </div>
+            <!-- 選擇 B (錯誤: 0分) -->
+            <div class="choice-card choice-bad" onclick="answer(0, 'slide4')">
+                <h3>👉 選擇 B</h3>
+                <p>享用「進口」酪梨吐司與空運來台的草莓。看起來很豐盛，但食材搭了很久的飛機才來喔。</p>
+            </div>
+        </div>
+    </div>
+</div>
 
-            const currentLocation = LOCATIONS.find(loc => loc.id === currentLocationId);
+<!-- Slide 4: 知識點一 -->
+<div class="slide-container" id="slide4">
+    <h2 class="slide-title">揭曉：食物里程的秘密 🚜</h2>
+    <div class="content-area">
+        <div class="two-column">
+            <div>
+                <div class="bullet-list">
+                    <ul>
+                        <li><i class="fa-solid fa-leaf"></i> <strong>食物里程 (Food Miles)</strong> 是指食物從生產地運送到你手中的距離。</li>
+                        <li><i class="fa-solid fa-leaf"></i> 距離越遠，交通運輸所產生的溫室氣體就越多。</li>
+                        <li><i class="fa-solid fa-leaf"></i> 選擇在地、當季的食材，不僅能吃到最新鮮的美味，還能大幅減少碳足跡。</li>
+                    </ul>
+                </div>
+            </div>
+            <div>
+                <div class="placeholder-img" style="font-size: 150px; background-color: #dcfce7;">
+                    <span>🥬🍠</span>
+                </div>
+            </div>
+        </div>
+        <button class="action-btn" onclick="nextSlide('slide5')">前往下一關 <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+</div>
 
-            const handleStartGame = () => {
-                if (progress.length === LOCATIONS.length) {
-                    setGameState('complete');
-                } else {
-                    setGameState('map');
-                }
-            };
+<!-- Slide 5: 關卡二 (選擇題) -->
+<div class="slide-container" id="slide5">
+    <h2 class="slide-title">第二關：準備上學囉！ 🎒</h2>
+    <div class="content-area">
+        <div class="two-column tiled">
+            <!-- 選擇 A (正確: 1分) -->
+            <div class="choice-card choice-good" onclick="answer(1, 'slide6')">
+                <h3>👉 選擇 A</h3>
+                <p>走路、騎腳踏車，或是搭公車上學。順便運動一下，還能欣賞沿途的風景。</p>
+            </div>
+            <!-- 選擇 B (錯誤: 0分) -->
+            <div class="choice-card choice-bad" onclick="answer(0, 'slide6')">
+                <h3>👉 選擇 B</h3>
+                <p>覺得走路太累了，拜託爸爸開汽車專程載你到校門口。雖然很方便，但會產生較多廢氣。</p>
+            </div>
+        </div>
+    </div>
+</div>
 
-            const handleSelectLocation = (id) => {
-                if (progress.includes(id)) return;
-                setCurrentLocationId(id);
-                setGameState('quiz');
-                setSelectedOption(null);
-                setShowFeedback(null);
-            };
+<!-- Slide 6: 知識點二 -->
+<div class="slide-container" id="slide6">
+    <h2 class="slide-title">交通工具碳排大車拚 🚌</h2>
+    <div class="content-area">
+        <div class="chart-container">
+            <div class="bar">
+                <div class="label">走路/腳踏車</div>
+                <div class="bar-inner"><div class="bar-fill" style="width: 8%; background: #22c55e;">0g</div></div>
+            </div>
+            <div class="bar">
+                <div class="label">公車/客運</div>
+                <div class="bar-inner"><div class="bar-fill" style="width: 35%; background: #eab308;">40g</div></div>
+            </div>
+            <div class="bar">
+                <div class="label">燃油小客車</div>
+                <div class="bar-inner"><div class="bar-fill" style="width: 90%; background: #ef4444;">120g</div></div>
+            </div>
+        </div>
+        <p class="chart-summary">以上是「每人每公里」產生的二氧化碳克數。選擇雙腳或大眾運輸，是愛護地球的最佳行動！</p>
+        <button class="action-btn" onclick="nextSlide('slide7')">前往下一關 <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+</div>
 
-            const handleAnswer = (isCorrect, optionIndex) => {
-                setSelectedOption(optionIndex);
-                if (isCorrect) {
-                    setShowFeedback('correct');
-                    setTimeout(() => {
-                        setGameState('success');
-                        if (!progress.includes(currentLocationId)) {
-                            setProgress(prev => [...prev, currentLocationId]);
-                        }
-                    }, 1000);
-                } else {
-                    setShowFeedback('wrong');
-                }
-            };
+<!-- Slide 7: 關卡三 (選擇題) -->
+<div class="slide-container" id="slide7">
+    <h2 class="slide-title">第三關：營養午餐時間 🍱</h2>
+    <div class="content-area">
+        <div class="two-column tiled">
+            <!-- 選擇 A (正確: 1分) -->
+            <div class="choice-card choice-good" onclick="answer(1, 'slide8')">
+                <h3>👉 選擇 A</h3>
+                <p>評估自己的食量打菜，並且把碗裡的飯菜全部吃光光，一點都不浪費！</p>
+            </div>
+            <!-- 選擇 B (錯誤: 0分) -->
+            <div class="choice-card choice-bad" onclick="answer(0, 'slide8')">
+                <h3>👉 選擇 B</h3>
+                <p>遇到不喜歡吃的青菜就挑掉，剩下很多飯菜沒吃完，最後通通倒進廚餘桶。</p>
+            </div>
+        </div>
+    </div>
+</div>
 
-            const handleBackToMap = () => {
-                if (progress.length === LOCATIONS.length) {
-                    setGameState('complete');
-                } else {
-                    setGameState('map');
-                }
-                setCurrentLocationId(null);
-            };
+<!-- Slide 8: 知識點三 -->
+<div class="slide-container" id="slide8">
+    <h2 class="slide-title">廚餘與溫室氣體 🗑️</h2>
+    <div class="content-area">
+        <div class="doughnut-chart-container">
+            <div class="doughnut-chart"></div>
+            <ul class="legend">
+                <li><div class="color-box" style="background-color: #f43f5e;"></div>食物浪費 (8%)</li>
+                <li><div class="color-box" style="background-color: #cbd5e1;"></div>其他排放 (92%)</li>
+            </ul>
+        </div>
+        <p class="chart-summary">全球約有 8% 溫室氣體來自「食物浪費」。廚餘在掩埋場還會產生比二氧化碳更強的「甲烷」喔！</p>
+        <button class="action-btn" onclick="nextSlide('slide9')">進入最後一關 <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+</div>
 
-            const handleRestart = () => {
-                setGameState('start');
-                setProgress([]);
-                localStorage.removeItem('ntsu_adventure_progress');
-                setCurrentLocationId(null);
-            };
+<!-- Slide 9: 關卡四 (選擇題) -->
+<div class="slide-container" id="slide9">
+    <h2 class="slide-title">第四關：放學時光 ⚽</h2>
+    <div class="content-area">
+        <div class="two-column tiled">
+            <!-- 選擇 A (正確: 1分) -->
+            <div class="choice-card choice-good" onclick="answer(1, 'slide9b')">
+                <h3>👉 選擇 A</h3>
+                <p>天氣真好！去戶外跑跑跳跳、接觸大自然，流流汗更健康！</p>
+            </div>
+            <!-- 選擇 B (錯誤: 0分) -->
+            <div class="choice-card choice-bad" onclick="answer(0, 'slide9b')">
+                <h3>👉 選擇 B</h3>
+                <p>待在房間裡，把冷氣開到最強，一邊喝冷飲一邊打電動到晚上。</p>
+            </div>
+        </div>
+    </div>
+</div>
 
-            // 1. 開始畫面
-            if (gameState === 'start') {
-                return (
-                    <div className="min-h-screen bg-blue-50 flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
-                        <div className="absolute top-10 left-10 text-6xl opacity-20 animate-bounce">⚽</div>
-                        <div className="absolute bottom-10 right-10 text-6xl opacity-20 animate-bounce delay-700">🏀</div>
-                        <div className="absolute top-1/2 left-5 text-4xl opacity-20 animate-pulse">🌳</div>
-                        
-                        <div className="max-w-md w-full text-center z-10">
-                            <div className="mb-6 inline-block bg-white p-6 rounded-full shadow-2xl border-8 border-yellow-300">
-                                <span className="text-6xl">🏆</span>
-                            </div>
-                            <h1 className="text-4xl font-black text-blue-600 mb-2 tracking-wider">國體大冒險</h1>
-                            <h2 className="text-xl font-bold text-slate-500 mb-8">體育小精靈的挑戰</h2>
-                            
-                            <Card className="mb-8 rotate-1 hover:rotate-0 transition-transform duration-300">
-                                <p className="text-slate-600 text-lg leading-relaxed">
-                                    歡迎來到國立體育大學！<br/>
-                                    我是體育小精靈，我要帶你去校園裡探險。<br/>
-                                    只要找到這 <span className="text-red-500 font-bold text-xl">4</span> 個地點並回答問題，<br/>
-                                    就能獲得<span className="text-yellow-500 font-bold">金牌勳章</span>喔！
-                                </p>
-                            </Card>
+<!-- Slide 9b: 知識點四 -->
+<div class="slide-container" id="slide9b">
+    <h2 class="slide-title">揭曉：節能與健康 ⚡</h2>
+    <div class="content-area">
+        <div class="two-column">
+            <div style="display: flex; flex-direction: column; justify-content: center;">
+                <p style="font-size: 28px;">多去戶外活動，減少對冷氣和耗電電子產品的依賴！</p>
+                <br>
+                <p style="background-color: #dcfce7; padding: 25px; border-radius: 20px; border: 4px dashed #86efac; color: #166534; font-size: 24px;">
+                    <strong>環保小叮嚀：</strong><br>
+                    冷氣是家裡的「吃電怪獸」。享受自然風不僅對身體好，還能大幅降低家庭的碳足跡喔！
+                </p>
+            </div>
+            <div>
+                <div class="placeholder-img" style="border-radius: 50%; font-size: 150px; background-color: #fef08a;">
+                    <span>⚽🏃‍♂️</span>
+                </div>
+            </div>
+        </div>
+        <button class="action-btn secondary" onclick="checkResult()" style="margin-top: 50px;">查看總結算成績！ <i class="fa-solid fa-ranking-star"></i></button>
+    </div>
+</div>
 
-                            <Button onClick={handleStartGame} className="bg-yellow-400 text-yellow-900 text-xl w-full hover:bg-yellow-300">
-                                開始冒險 GO!
-                            </Button>
-                        </div>
-                    </div>
-                );
-            }
+<!-- Slide 10: 結局 A (好結局) -->
+<div class="slide-container" id="slide10">
+    <h2 class="slide-title" style="color: #16a34a; text-align: center; width: 100%;"><i class="fa-solid fa-crown"></i> 結局 A：低碳達人！</h2>
+    <div class="content-area">
+        <div class="two-column" style="align-items: center;">
+            <div class="placeholder-img" style="border-radius: 50%; border: 10px solid #86efac; height: 400px; width: 400px; margin: 0 auto; font-size: 180px; background-color: #e0f2fe;">
+                <span>🐻‍❄️👍</span>
+            </div>
+            <div style="display: flex; flex-direction: column; justify-content: center;">
+                <h3 style="font-size: 42px; color: #15803d; margin-bottom: 20px;">拯救北極熊的英雄</h3>
+                <p style="font-size: 26px; line-height: 1.6;">恭喜你！透過今天一連串的好選擇，你成功幫地球減輕了沉重的負擔。</p>
+                <p style="font-size: 26px; line-height: 1.6; margin-top: 15px;">北極熊非常感謝你的行動！請繼續保持這個好習慣吧！</p>
+            </div>
+        </div>
+        <button class="action-btn" onclick="nextSlide('slide12')">下一步 <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+</div>
 
-            // 2. 地圖選單
-            if (gameState === 'map') {
-                return (
-                    <div className="min-h-screen bg-green-50 p-4 font-sans">
-                        <div className="max-w-md mx-auto">
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-black text-green-700 flex items-center gap-2">
-                                    <MapIcon className="w-8 h-8" /> 校園地圖
-                                </h2>
-                                <div className="bg-white px-4 py-2 rounded-full shadow-sm border-2 border-green-200 font-bold text-green-600">
-                                    進度: {progress.length} / {LOCATIONS.length}
-                                </div>
-                            </div>
+<!-- Slide 11: 結局 B (壞結局) -->
+<div class="slide-container" id="slide11">
+    <h2 class="slide-title" style="color: #e11d48; text-align: center; width: 100%;"><i class="fa-solid fa-triangle-exclamation"></i> 結局 B：排碳大戶...</h2>
+    <div class="content-area">
+        <div class="quote-layout">
+            <blockquote>哎呀！你的總得分不足，選擇讓碳排放量爆表了，地球正在發燒！</blockquote>
+            <cite>— 但別灰心，從下一頓飯、下一趟出門開始，<br>你隨時都能重新選擇低碳生活。</cite>
+        </div>
+        <button class="action-btn" onclick="nextSlide('slide12')">下一步 <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+</div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                {LOCATIONS.map((loc) => {
-                                    const isCompleted = progress.includes(loc.id);
-                                    return (
-                                        <button
-                                            key={loc.id}
-                                            onClick={() => handleSelectLocation(loc.id)}
-                                            disabled={isCompleted}
-                                            className={`relative aspect-square rounded-3xl p-4 flex flex-col items-center justify-center gap-2 transition-all transform
-                                                ${isCompleted 
-                                                ? 'bg-slate-200 cursor-default opacity-80' 
-                                                : `${loc.color} hover:scale-105 shadow-[0_6px_0_rgba(0,0,0,0.1)] active:shadow-none active:translate-y-2`
-                                                }
-                                            `}
-                                        >
-                                            <span className="text-5xl filter drop-shadow-md">{loc.icon}</span>
-                                            <span className={`font-bold text-lg ${isCompleted ? 'text-slate-500' : 'text-white drop-shadow-md'}`}>
-                                                {loc.shortName}
-                                            </span>
-                                            {isCompleted && (
-                                                <div className="absolute inset-0 flex items-center justify-center bg-black/10 rounded-3xl">
-                                                    <CheckCircleIcon className="w-16 h-16 text-white drop-shadow-lg" />
-                                                </div>
-                                            )}
-                                        </button>
-                                    );
-                                })}
-                            </div>
+<!-- Slide 12: 結語與問答 -->
+<div class="slide-container" id="slide12">
+    <div class="content-area" style="text-align: center;">
+        <h2 style="font-size: 80px; color: #0ea5e9; margin-bottom: 30px;">準備好開始了嗎？</h2>
+        <p style="font-size: 36px; color: #334155;">減碳生活，從你我做起！</p>
+        <div style="font-size: 30px; margin-top: 60px; background-color: #fef08a; padding: 25px 50px; border-radius: 50px; border: 6px solid #fde047; display: inline-block; font-weight: 800; color: #0f172a; margin-bottom: 50px;">
+            <i class="fa-solid fa-lightbulb" style="color: #ca8a04; margin-right: 15px; font-size: 40px;"></i>
+            有沒有什麼減碳好點子想分享呢？
+        </div>
+        <br>
+        <button class="action-btn secondary" onclick="restart()">再玩一次 <i class="fa-solid fa-rotate-right"></i></button>
+    </div>
+</div>
 
-                            <div className="mt-8 bg-white p-4 rounded-2xl border-l-8 border-blue-400 shadow-sm">
-                                <h3 className="font-bold text-blue-600 flex items-center gap-2 mb-1">
-                                    <FootprintsIcon className="w-5 h-5" /> 小精靈提示：
-                                </h3>
-                                <p className="text-slate-600 text-sm">
-                                    請點擊彩色的格子前往闖關地點！完成所有地點後會有神秘獎勵喔！
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                );
-            }
+<!-- 遊戲邏輯腳本 -->
+<script>
+    let currentScore = 0;
+    const scoreBoard = document.getElementById('score-board');
+    const scoreDisplay = document.getElementById('score-display');
 
-            // 3. 答題畫面
-            if (gameState === 'quiz' && currentLocation) {
-                return (
-                    <div className={`min-h-screen ${currentLocation.color.replace('bg-', 'bg-opacity-20 bg-')} p-4 flex flex-col font-sans`}>
-                        <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
-                            <button 
-                                onClick={() => setGameState('map')} 
-                                className="self-start mb-4 bg-white/80 p-2 rounded-full hover:bg-white text-slate-600"
-                            >
-                                <ArrowRightIcon className="w-6 h-6 rotate-180" />
-                            </button>
-
-                            <Card className="flex-1 flex flex-col items-center text-center mb-6 relative overflow-visible">
-                                <div className={`absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 ${currentLocation.color} rounded-full border-4 border-white flex items-center justify-center shadow-lg`}>
-                                    <span className="text-5xl">{currentLocation.icon}</span>
-                                </div>
-
-                                <h2 className="text-2xl font-black text-slate-800 mt-12 mb-2">{currentLocation.name}</h2>
-                                <div className="bg-slate-100 rounded-lg p-3 mb-6 w-full text-left flex gap-3">
-                                    <InfoIcon className="w-6 h-6 text-blue-500 shrink-0 mt-1" />
-                                    <p className="text-slate-600 text-sm leading-relaxed">{currentLocation.description}</p>
-                                </div>
-
-                                <div className="w-full h-1 bg-slate-100 mb-6 rounded-full"></div>
-
-                                <h3 className="text-xl font-bold text-slate-800 mb-6 leading-snug">
-                                    <span className="text-red-500 mr-2">Q:</span>
-                                    {currentLocation.question}
-                                </h3>
-
-                                <div className="w-full space-y-3">
-                                    {currentLocation.options.map((option, idx) => (
-                                        <button
-                                            key={idx}
-                                            onClick={() => handleAnswer(option.isCorrect, idx)}
-                                            disabled={showFeedback !== null}
-                                            className={`w-full p-4 rounded-xl border-2 font-bold text-lg transition-all
-                                                ${showFeedback !== null && idx === selectedOption
-                                                ? option.isCorrect 
-                                                    ? 'bg-green-100 border-green-500 text-green-700'
-                                                    : 'bg-red-100 border-red-500 text-red-700 animate-shake'
-                                                : 'bg-white border-slate-200 text-slate-600 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50'
-                                                }
-                                            `}
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <span>{option.text}</span>
-                                                {showFeedback !== null && idx === selectedOption && (
-                                                    option.isCorrect 
-                                                        ? <CheckCircleIcon className="w-6 h-6 text-green-500" />
-                                                        : <XCircleIcon className="w-6 h-6 text-red-500" />
-                                                )}
-                                            </div>
-                                        </button>
-                                    ))}
-                                </div>
-                                
-                                {showFeedback === 'wrong' && (
-                                    <div className="mt-4 text-red-500 font-bold animate-pulse">
-                                        唉呀！再試一次看看？
-                                        <div className="text-sm font-normal text-slate-400 mt-1">(2秒後重置)</div>
-                                    </div>
-                                )}
-                            </Card>
-                        </div>
-                    </div>
-                );
-            }
-
-            // 4. 成功通關
-            if (gameState === 'success' && currentLocation) {
-                return (
-                    <div className="min-h-screen bg-yellow-400 flex flex-col items-center justify-center p-4 font-sans text-center">
-                        <div className="bg-white rounded-3xl p-8 shadow-2xl max-w-sm w-full animate-bounce-small">
-                            <div className="text-6xl mb-4">🎉</div>
-                            <h2 className="text-3xl font-black text-yellow-600 mb-2">答對了！</h2>
-                            <p className="text-slate-500 font-bold text-lg mb-6">你真棒！獲得 1 個印章！</p>
-                            
-                            <div className="bg-yellow-50 p-4 rounded-xl border-2 border-yellow-200 text-left mb-8">
-                                <h4 className="font-bold text-yellow-800 mb-1 flex items-center gap-2">
-                                    <StarIcon className="w-5 h-5 fill-yellow-500 text-yellow-500" /> 小知識：
-                                </h4>
-                                <p className="text-slate-700">{currentLocation.funFact}</p>
-                            </div>
-
-                            <Button onClick={handleBackToMap} className="bg-green-500 text-white w-full hover:bg-green-400">
-                                {progress.length === LOCATIONS.length -1 ? "查看結果" : "繼續冒險"}
-                            </Button>
-                        </div>
-                    </div>
-                );
-            }
-
-            // 5. 結算畫面
-            if (gameState === 'complete') {
-                return (
-                    <div className="min-h-screen bg-gradient-to-b from-blue-400 to-purple-500 p-4 flex flex-col items-center justify-center font-sans">
-                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                            {[...Array(20)].map((_, i) => (
-                                <div key={i} className="absolute text-2xl animate-float" style={{
-                                    left: `${Math.random() * 100}%`,
-                                    top: `${Math.random() * 100}%`,
-                                    animationDelay: `${Math.random() * 2}s`,
-                                    opacity: 0.6
-                                }}>✨</div>
-                            ))}
-                        </div>
-
-                        <Card className="w-full max-w-md text-center py-10 relative overflow-hidden">
-                            <div className="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-red-400 via-yellow-400 to-green-400"></div>
-                            
-                            <div className="mb-6 relative inline-block">
-                                <TrophyIcon className="w-32 h-32 text-yellow-400 mx-auto drop-shadow-lg" />
-                                <div className="absolute -bottom-2 -right-2 bg-red-500 text-white font-bold px-3 py-1 rounded-full text-sm rotate-12 shadow-md">
-                                    任務達成
-                                </div>
-                            </div>
-
-                            <h1 className="text-3xl font-black text-slate-800 mb-2">恭喜你！</h1>
-                            <p className="text-slate-500 mb-8">你已經完成了國體大冒險的所有挑戰！</p>
-
-                            <div className="grid grid-cols-4 gap-2 mb-8 px-4">
-                                {LOCATIONS.map(loc => (
-                                    <div key={loc.id} className="flex flex-col items-center">
-                                        <div className={`w-12 h-12 rounded-full ${loc.color} flex items-center justify-center text-2xl shadow-inner`}>
-                                            {loc.icon}
-                                        </div>
-                                        <div className="mt-1 text-xs font-bold text-slate-400">{loc.shortName}</div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="space-y-3">
-                                <div className="bg-blue-50 p-4 rounded-xl text-blue-800 text-sm font-bold">
-                                    你是「國體大知識小博士」！
-                                </div>
-                                <Button onClick={handleRestart} className="bg-slate-800 text-white w-full hover:bg-slate-700 flex items-center justify-center gap-2">
-                                    <RotateCcwIcon className="w-5 h-5" /> 再玩一次
-                                </Button>
-                            </div>
-                        </Card>
-                        
-                        <div className="mt-8 text-white/80 text-sm font-medium">
-                            National Taiwan Sport University
-                        </div>
-                    </div>
-                );
-            }
-            
-            return null;
+    // 切換畫面的共用函數
+    function showSlide(slideId) {
+        // 隱藏所有畫面
+        document.querySelectorAll('.slide-container').forEach(el => {
+            el.classList.remove('active');
+        });
+        // 顯示目標畫面
+        document.getElementById(slideId).classList.add('active');
+        
+        // 只有在遊戲進行中(第三關到第九關)才顯示右上角分數板
+        const gameSlides = ['slide3', 'slide4', 'slide5', 'slide6', 'slide7', 'slide8', 'slide9', 'slide9b'];
+        if (gameSlides.includes(slideId)) {
+            scoreBoard.style.display = 'block';
+        } else {
+            scoreBoard.style.display = 'none';
         }
+    }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<NTSUAdventure />);
-    </script>
+    // 單純前往下一頁
+    function nextSlide(slideId) {
+        showSlide(slideId);
+    }
+
+    // 開始遊戲初始化
+    function startGame() {
+        currentScore = 0;
+        updateScoreDisplay();
+        showSlide('slide3');
+    }
+
+    // 答題邏輯：累加分數並前往下一頁
+    function answer(points, nextSlideId) {
+        currentScore += points;
+        updateScoreDisplay();
+        showSlide(nextSlideId);
+    }
+
+    // 更新分數板顯示
+    function updateScoreDisplay() {
+        scoreDisplay.innerText = currentScore;
+    }
+
+    // 最終結算邏輯
+    function checkResult() {
+        // 滿分 4 分，達到 3 分(含)以上就算過關
+        if (currentScore >= 3) {
+            showSlide('slide10'); // 好結局
+        } else {
+            showSlide('slide11'); // 壞結局
+        }
+    }
+
+    // 重新開始
+    function restart() {
+        currentScore = 0;
+        updateScoreDisplay();
+        showSlide('slide1');
+    }
+</script>
+
 </body>
 </html>
+```
